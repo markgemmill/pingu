@@ -96,7 +96,7 @@ func (cmd *CheckCmd) Run(ctx *Context) error {
 	if err != nil && record.Count >= cmd.AlertThreshold {
 		console.Dedent()
 		console.Info(pkg.Yellow("Sending Email Alert...\n"))
-		pkg.SendEmailAlert2(
+		pkg.SendEmailAlert(
 			pkg.NewSmtpServer(
 				cmd.EmailHost,
 				cmd.EmailPort,

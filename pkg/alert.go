@@ -72,6 +72,9 @@ func NewSmtpServer(host string, port int, user, password string) *mail.SMTPServe
 }
 
 func ParseEmailAddresses(addressString string) []string {
+	if addressString == "" {
+		return []string{}
+	}
 	addresses := strings.Split(addressString, ";")
 	return addresses
 }
@@ -94,36 +97,50 @@ func ValidEmail(email string, single bool) bool {
 func NewAlertEmail(from, to, cc string) *mail.Email {
 	email := mail.NewMSG()
 
+	console.Indent()
 	// technically we should be validating there is only 1 address.
 	emailFrom := ParseEmailAddresses(from)
+	console.Trace("Email - set from: %s\n", emailFrom[0])
 	email.SetFrom(emailFrom[0])
 
 	for _, emailTo := range ParseEmailAddresses(to) {
+		console.Trace("Email - adding to: %s\n", emailTo)
 		email.AddTo(emailTo)
 	}
 
 	for _, emailCc := range ParseEmailAddresses(cc) {
+		console.Trace("Email - adding cc: %s\n", emailCc)
 		email.AddCc(emailCc)
 	}
+
+	console.Dedent()
+
 	return email
 }
 
-func SendEmailAlert2(server *mail.SMTPServer, email *mail.Email, url string, record *StoreRecord) {
+func SendEmailAlert(server *mail.SMTPServer, email *mail.Email, url string, record *StoreRecord) {
 	email.SetSubject(ComposeAlertSubject(url))
 	email.SetBody(mail.TextPlain, ComposeTextMessage(url, record))
 	email.SetBody(mail.TextHTML, ComposeHtmlMessage(url, record))
 
+	console.Trace(">>>>> email >>>>>>>>>>>>>>\n")
+	console.Trace(email.GetMessage())
+	console.Trace("<<<<< email <<<<<<<<<<<<<<\n")
+
 	if email.Error != nil {
+		console.Print("Email contruction contains errors!\n")
 		PanicOnError(email.Error)
 	}
 
 	client, err := server.Connect()
 	if err != nil {
+		console.Print("SMTP server connect failed!\n")
 		PanicOnError(err)
 	}
 
 	err = email.Send(client)
 	if err != nil {
+		console.Print("Email send failed!\n")
 		PanicOnError(err)
 	}
 }
@@ -133,6 +150,10 @@ func SendEmailReport(server *mail.SMTPServer, email *mail.Email, message *Report
 	email.SetSubject(message.Subject())
 	email.SetBody(mail.TextPlain, message.ToText())
 	email.SetBody(mail.TextHTML, message.ToHtml())
+
+	console.Trace(">>>>> email >>>>>>>>>>>>>>")
+	console.Trace(email.GetMessage())
+	console.Trace("<<<<< email <<<<<<<<<<<<<<")
 
 	if email.Error != nil {
 		PanicOnError(email.Error)

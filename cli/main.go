@@ -18,7 +18,7 @@ func main() {
 			Summary: true,
 		}),
 		kong.Vars{
-			"version": "0.1.0-dev.2",
+			"version": "0.1.0-dev.3",
 		})
 
 	ctx.Run(&Context{})

@@ -1,0 +1,14 @@
+URL CHECK REPORT
+----------------
+Pingu check report for url {{ url }}.
+
+Current Status
+--------------
+{{ current }}
+
+
+Status History
+--------------
+{% for status in history -%}
+{{ status }}
+{% endfor %}

@@ -1,0 +1,30 @@
+<html>
+<head>
+    <style>
+        td {
+            padding: 5px 20px 5px 5px;
+            font-family: courier, "courier new", monospaced;
+        }
+        td.title {
+            font-weight: bold;
+        }
+        td.odd {
+            background-color: rgba(204, 204, 204, 0.99);
+        }
+    </style>
+</head>
+<body>
+    <h2>URL CHECK REPORT</h2>
+    <p>Pingu check report for url <a href="{{ url }}">{{ url }}</a>.</p>
+    <h3>Current Status</h3>
+    <table>
+        <tr><td class="odd">{{ current }}</td></tr>
+    </table>
+    <h3>Status History</h3>
+    <table>
+        {% for status in history %}
+        <tr><td class="{% cycle 'odd' 'even' %}">{{ status }}</td></tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

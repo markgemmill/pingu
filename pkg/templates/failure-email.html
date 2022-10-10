@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <style>
+            td {
+                padding: 5px 20px 5px 5px;
+                font-family: courier, "courier new", monospaced;
+            }
+            td.title {
+                font-weight: bold;
+            }
+            td.odd {
+                background-color: rgba(204, 204, 204, 0.99);
+            }
+        </style>
+    </head>
+    <body>
+        <h2>URL CHECK FAILURE!!!</h2>
+        <p>The last pingu check of url <a href="{{ url }}">{{ url }}</a> failed.</p>
+        <table>
+            <tr><td class="title odd">URL</td><td class="odd">{{ url }}</td></tr>
+            <tr><td class="title">FIRST FAILURE</td><td class="">{{ record.Start|date:"2006-01-02 15:04:05" }}</td></tr>
+            <tr><td class="title odd">LAST FAILURE</td><td class="odd">{{ record.Last|date:"2006-01-02 15:04:05" }}</td></tr>
+            <tr><td class="title">CHECK COUNT</td><td class="">{{ record.Count }}</td></tr>
+        </table>
+    </body>
+</html>

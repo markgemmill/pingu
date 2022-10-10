@@ -1,0 +1,30 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+    silent: true
+
+  build:
+    cmds:
+      - rm -f bin/*
+      - go build -o bin/pingu cli/*.go
+
+  release:build:
+    cmds:
+      - goreleaser build --snapshot --rm-dist
+
+  release:
+    cmds:
+      - goreleaser release --rm-dist --skip-announce
+
+
+  test:
+    cmds:
+      - gotestsum --format testname

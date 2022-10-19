@@ -18,10 +18,10 @@ func main() {
 			Summary: true,
 		}),
 		kong.Vars{
-			"version": "0.1.0-dev.4",
+			"version": "0.1.0-dev.5",
 		})
 
 	err := ctx.Run(&Context{})
-	pkg.PanicOnError(err)
+	pkg.ExitOnError(err, "")
 
 }

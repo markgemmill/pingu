@@ -127,7 +127,7 @@ func (cmd *CheckCmd) Run(ctx *Context) error {
 			record)
 	}
 
-	return err
+	return nil
 }
 
 type ReportCmd struct {

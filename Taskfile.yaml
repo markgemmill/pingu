@@ -2,11 +2,19 @@
 
 version: '3'
 
+vars:
+  VERSION:
+    sh: dover
+
 tasks:
   build:
     cmds:
       - rm -f bin/*
       - go build -o bin/pingu cli/*.go
+
+  release:tag:
+    cmds:
+      - git tag -a v{{.VERSION}} -m "v{{.VERSION}}"
 
   release:build:
     cmds:

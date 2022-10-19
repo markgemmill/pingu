@@ -2,7 +2,7 @@ package pkg
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -23,12 +23,14 @@ func UrlFetch(url string) UrlResult {
 
 	result.StatusCode = resp.StatusCode
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
+	body, err := io.ReadAll(resp.Body)
+	PanicOnError(err)
+
 	result.Content = string(body)
-	resp.Body.Close()
+
+	err = resp.Body.Close()
+	IgnoreOnError(err)
+
 	return result
 }
 
@@ -68,7 +70,7 @@ func (u *UrlCheck) Test() {
 	console.Indent()
 
 	if result.Fail {
-		console.Trace("Failed to fech url!")
+		console.Trace("Failed to fetch url!")
 		u.Pass = false
 		u.Errors = append(u.Errors, "Could not fetch url.")
 		return
@@ -76,7 +78,6 @@ func (u *UrlCheck) Test() {
 
 	for _, assertion := range u.Assertions {
 		assert := *assertion
-		//console.Trace("Running assertion...\n")
 		passed, errMsg := assert.Assert(&result)
 		console.Trace("%s %s%s\n", assert.Name(), PassFail(passed), ErrMsg(errMsg))
 

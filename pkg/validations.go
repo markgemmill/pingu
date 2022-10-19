@@ -56,7 +56,7 @@ func (a *ContentAssertion) Assert(test *UrlResult) (bool, string) {
 }
 
 func BuildAssertions(expectedStatus int, expectedContent string) *[]*Assertion {
-	assertions := []*Assertion{}
+	assertions := make([]*Assertion, 0)
 
 	var si Assertion
 	si = NewStatusCodeAssertion(expectedStatus)

@@ -1,35 +1,3 @@
-/*
-Store manages a repository of url check history.
-
-A url store consists of a folder named for the url. Example:
-
-	https://markgemmill.com/posts/pages
-
-	/https_markgemmill_com_posts_pages
-	/https_markgemmill_com_posts_pages/0192845-log.txt
-
-Content of the log file looks like this:
-
-	2022-08-06T12:12:00|2022-09-01T12:12:00|00:05:00|5467|PASS
-	2022-09-01T12:12:00|2022-09-01:12:30:00|3|FAIL
-	2022-09-01T12:12:00|2022-09-01:12:30:00|1|ALERT
-	2022-08-06T12:12:00|2022-09-01T12:12:00|5467|PASS
-	2022-09-01T12:12:00|2022-09-01:12:30:00|3|FAIL
-	2022-09-01T12:12:00|2022-09-01:12:30:00|1|ALERT
-
-Structure of the line is:
-
-	start timestamp
-	end timestamp
-	interval since previous timestamp
-	number of checks
-	ping status (PASS, FAIL or ALERT)
-
-Essentially, while nothing changes, the line stays the same, we just
-update the end timestamp and the iterval and the ping count.
-
-As soon as the status changes we create a new record line with an updated status.
-*/
 package pkg
 
 import (
@@ -82,13 +50,6 @@ func sluggifyUrl(url string) string {
 	return url
 }
 
-func getName(url, name string) string {
-	if name == "" {
-		return sluggifyUrl(url)
-	}
-	return name
-}
-
 func getStoreId(url, name string) string {
 	if name == "" {
 		return fmt.Sprintf("%x", sha1.Sum([]byte(url)))
@@ -126,7 +87,9 @@ func (s *Store) Read() {
 func (s *Store) Write() {
 	content, err := json.Marshal(s.Data)
 	PanicOnError(err)
-	afero.WriteFile(fs, s.Path, content, 0777)
+
+	err = afero.WriteFile(fs, s.Path, content, 0777)
+	PanicOnError(err)
 }
 
 // Save either updates the current StoreRecord value,
@@ -139,6 +102,7 @@ func (s *Store) Write() {
 // When there is a change, we stash the current status to history,
 // and start a new status.
 func (s *Store) Save(status, message string) {
+	// TODO: on first save we get an empty store record - need to fix this...
 	currentTimestamp := time.Now()
 	if s.Data.Current.Status == status {
 		s.Data.Current.Count += 1

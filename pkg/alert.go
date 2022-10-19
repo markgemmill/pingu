@@ -17,11 +17,11 @@ func ComposeAlertSubject(url string) string {
 func ComposeTextMessage(url string, record *StoreRecord) string {
 	var b = strings.Builder{}
 
-	fmt.Fprintf(&b, "URL CHECK FAILED FOR:")
-	fmt.Fprintf(&b, "%s\r\n\r\n", url)
-	fmt.Fprintf(&b, "FAILURE STARTED AT: %s\r\n", record.Start)
-	fmt.Fprintf(&b, "LAST FAILURE AT:    %s\r\n", record.Last)
-	fmt.Fprintf(&b, "URL CHECKED %d TIMES.\r\n", record.Count)
+	_, _ = fmt.Fprintf(&b, "URL CHECK FAILED FOR:")
+	_, _ = fmt.Fprintf(&b, "%s\r\n\r\n", url)
+	_, _ = fmt.Fprintf(&b, "FAILURE STARTED AT: %s\r\n", record.Start)
+	_, _ = fmt.Fprintf(&b, "LAST FAILURE AT:    %s\r\n", record.Last)
+	_, _ = fmt.Fprintf(&b, "URL CHECKED %d TIMES.\r\n", record.Count)
 
 	return b.String()
 }
@@ -123,12 +123,12 @@ func SendEmailAlert(server *mail.SMTPServer, email *mail.Email, url string, reco
 	email.SetBody(mail.TextPlain, ComposeTextMessage(url, record))
 	email.SetBody(mail.TextHTML, ComposeHtmlMessage(url, record))
 
-	console.Trace(">>>>> email >>>>>>>>>>>>>>\n")
-	console.Trace(email.GetMessage())
-	console.Trace("<<<<< email <<<<<<<<<<<<<<\n")
+	//console.Trace(">>>>> email >>>>>>>>>>>>>>\n")
+	//console.Trace(email.GetMessage())
+	//console.Trace("<<<<< email <<<<<<<<<<<<<<\n")
 
 	if email.Error != nil {
-		console.Print("Email contruction contains errors!\n")
+		console.Print("Email construction contains errors!\n")
 		PanicOnError(email.Error)
 	}
 
@@ -146,14 +146,14 @@ func SendEmailAlert(server *mail.SMTPServer, email *mail.Email, url string, reco
 }
 
 func SendEmailReport(server *mail.SMTPServer, email *mail.Email, message *ReportMessage) {
-
+	// TODO: this is the same as the above function apart from these three lines
 	email.SetSubject(message.Subject())
 	email.SetBody(mail.TextPlain, message.ToText())
 	email.SetBody(mail.TextHTML, message.ToHtml())
 
-	console.Trace(">>>>> email >>>>>>>>>>>>>>")
-	console.Trace(email.GetMessage())
-	console.Trace("<<<<< email <<<<<<<<<<<<<<")
+	//console.Trace(">>>>> email >>>>>>>>>>>>>>")
+	//console.Trace(email.GetMessage())
+	//console.Trace("<<<<< email <<<<<<<<<<<<<<")
 
 	if email.Error != nil {
 		PanicOnError(email.Error)

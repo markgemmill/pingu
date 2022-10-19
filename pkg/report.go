@@ -11,33 +11,6 @@ import (
 	"time"
 )
 
-func StoreRecordFailureReport(url string, record *StoreRecord) string {
-	res := NewResources("templates")
-	message, _ := res.ReadText("failure-email.html")
-	//tmpl := template.Must(template.New("alert-message").Parse(message))
-	tmpl, err := pongo2.FromString(message)
-	PanicOnError(err)
-
-	//var b bytes.Buffer
-
-	//data := struct {
-	//	Url    string
-	//	Record *StoreRecord
-	//}{Url: url, Record: record}
-
-	data := pongo2.Context{
-		"url":    url,
-		"record": record,
-	}
-
-	//err := tmpl.Execute(&b, data)
-	out, err := tmpl.Execute(data)
-	PanicOnError(err)
-
-	//return b.String()
-	return out
-}
-
 func TimeSegment(d float64, f float64) (float64, float64) {
 	wholeAmount := math.Floor(d / f)
 	return wholeAmount, d - (wholeAmount * f)
@@ -59,18 +32,23 @@ func DurationString(d time.Duration) string {
 
 	b := strings.Builder{}
 	if days > 0.0 {
-		fmt.Fprintf(&b, "%d day%s", int(days), plural(int(days)))
+		_, err := fmt.Fprintf(&b, "%d day%s", int(days), plural(int(days)))
+		ExitOnError(err, "")
 	}
 	if days > 0.0 && hours > 0.0 {
-		fmt.Fprintf(&b, ", %d hour%s", int(hours), plural(int(hours)))
+		_, err := fmt.Fprintf(&b, ", %d hour%s", int(hours), plural(int(hours)))
+		ExitOnError(err, "")
 	} else if hours > 0.0 {
-		fmt.Fprintf(&b, "%d hour%s", int(hours), plural(int(hours)))
+		_, err := fmt.Fprintf(&b, "%d hour%s", int(hours), plural(int(hours)))
+		ExitOnError(err, "")
 	}
 
 	if (hours > 0.0 || days > 0.0) && minutes > 0 {
-		fmt.Fprintf(&b, " and %d minute%s", int(minutes), plural(int(minutes)))
+		_, err := fmt.Fprintf(&b, " and %d minute%s", int(minutes), plural(int(minutes)))
+		ExitOnError(err, "")
 	} else if minutes > 0 {
-		fmt.Fprintf(&b, "%v minute%s", int(minutes), plural(int(minutes)))
+		_, err := fmt.Fprintf(&b, "%v minute%s", int(minutes), plural(int(minutes)))
+		ExitOnError(err, "")
 	}
 
 	return b.String()
@@ -104,6 +82,7 @@ func StoreRecordStatusReport(record *StoreRecord) string {
 	return b.String()
 }
 
+// ReportMessage creates an html and text report of the data store.
 type ReportMessage struct {
 	Store   *StoreMaster
 	context pongo2.Context
@@ -113,7 +92,7 @@ func (r *ReportMessage) Initialize() {
 
 	current := StoreRecordStatusReport(&r.Store.Current)
 
-	history := []StoreRecord{}
+	history := make([]StoreRecord, 0)
 	history = append(history, r.Store.Passes...)
 	history = append(history, r.Store.Failures...)
 

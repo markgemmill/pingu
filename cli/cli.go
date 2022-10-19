@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/alecthomas/kong"
+	"os"
 	"pingu/pkg"
 	"time"
 )
@@ -37,9 +38,10 @@ type EmailOptions struct {
 }
 
 func (opt *EmailOptions) Validate() error {
+	console.Trace("EmailOptions.Validate() called!")
 	if opt.Email == true {
 		if opt.EmailHost == "" || !pkg.ValidEmail(opt.EmailFrom, true) || !pkg.ValidEmail(opt.EmailTo, false) || !pkg.ValidEmail(opt.EmailCc, false) {
-			return errors.New("Invalid alert configuration!")
+			return errors.New("invalid alert configuration")
 		}
 	}
 	return nil
@@ -57,15 +59,16 @@ type RetryOptions struct {
 
 func (opt *RetryOptions) Validate() error {
 	if opt.Retries > 0 && (opt.RetryIncrement < 1 || opt.RetryIncrement > 3) {
-		return errors.New("Retry increments must be a value between 1 and 3.")
+		return errors.New("retry increments must be a value between 1 and 3")
 	}
 	return nil
 }
 
 type CheckCmd struct {
 	UrlOptions
-	ExpectedStatus  int    `short:"e" name:"expect-status" group:"assertion options" default:"200" help:"The expected http status."`
-	ExpectedContent string `short:"c" name:"expect-content" group:"assertion options" help:"A regular express that must match the returned content."`
+	ExpectedStatus  int      `short:"e" name:"expect-status" group:"assertion options" default:"200" help:"The expected http status."`
+	ExpectedContent string   `short:"c" name:"expect-content" group:"assertion options" help:"A regular express that must match the returned content."`
+	IgnorePeriod    []string `name:"ignore-period" sep:";" help:"A time span during which calls to check will be ignored. Example: 'SAT 10:00PM - SUN 1:00AM'"`
 	RetryOptions
 	AlertThreshold int64 `short:"a" name:"alert-threshold" default:"0" help:"Alert will be raise after this many consecutive failures."`
 	Verbose        int   `short:"v" type:"counter" help:"Verbosity can have a value of 1-3. Example: --verbose=3 or -vvv."`
@@ -80,6 +83,18 @@ func (cmd *CheckCmd) Run(ctx *Context) error {
 
 	console = pkg.NewConsole(cmd.Verbose)
 
+	currentTimestamp := time.Now()
+
+	for _, ignoreText := range cmd.IgnorePeriod {
+		console.Trace("Checking: %s\n", ignoreText)
+		ignore := pkg.IsIgnorePeriodActive(ignoreText, currentTimestamp)
+		if ignore == true {
+			console.Info("%s %s\n", pkg.Red("Ignore time period:"), pkg.Yellow(ignoreText))
+			console.Info("%s\n", pkg.Red("Current period is active. Exiting..."))
+			os.Exit(0)
+		}
+	}
+
 	record, err := pkg.CheckCommand(cmd.Url, cmd.ExpectedStatus, cmd.ExpectedContent, cmd.StoreName, console)
 
 	if err != nil && cmd.Retries > 0 {
@@ -93,7 +108,7 @@ func (cmd *CheckCmd) Run(ctx *Context) error {
 		}
 	}
 
-	if err != nil && record.Count >= cmd.AlertThreshold {
+	if err != nil && record.Count >= cmd.AlertThreshold && cmd.Email == true {
 		console.Dedent()
 		console.Info(pkg.Yellow("Sending Email Alert...\n"))
 		pkg.SendEmailAlert(

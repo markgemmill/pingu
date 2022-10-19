@@ -13,6 +13,7 @@ var (
 	emfs embed.FS
 )
 
+// Resources represents a resource directory.
 type Resources struct {
 	directory string
 	templates []iofs.DirEntry
@@ -23,9 +24,9 @@ func (r *Resources) Initialize() {
 	r.templates = templates
 }
 
+// ReadText opens and reads the named resource from the directory as text.
 func (r *Resources) ReadText(name string) (string, error) {
 	for _, template := range r.templates {
-		//fmt.Printf("Resource: %s\n", template.Name())
 		if template.Name() == name && !template.Type().IsDir() {
 			text, err := iofs.ReadFile(emfs, path.Join(r.directory, template.Name()))
 			if err != nil {
@@ -37,6 +38,7 @@ func (r *Resources) ReadText(name string) (string, error) {
 	return "", errors.New(fmt.Sprintf("No template: %s", name))
 }
 
+// NewResources creates a new Resource object.
 func NewResources(directory string) *Resources {
 	res := Resources{directory: directory}
 	res.Initialize()

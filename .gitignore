@@ -2,6 +2,6 @@
 bin
 dist
 *.sh
-*.sh
 pingu
 workbench
+cover.out

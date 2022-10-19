@@ -8,13 +8,7 @@ import (
 
 func CheckCommand(url string, expectedStatus int, expectedContent string, storeName string, console *Console) (*StoreRecord, error) {
 
-	//console = NewConsole(verbose)
-
 	assertions := BuildAssertions(expectedStatus, expectedContent)
-
-	//console.Indent()
-	//console.Trace("Assertion count: %v\n", len(*assertions))
-	//console.Dedent()
 
 	urlCheck := NewUrlCheck(url, *assertions)
 
@@ -35,13 +29,13 @@ func CheckCommand(url string, expectedStatus int, expectedContent string, storeN
 	console.Indent()
 	for _, msg := range urlCheck.Errors {
 		console.Print("%s: %s\n", Red(FAIL), msg)
-		fmt.Fprintf(&b, "%s; ", msg)
+		_, _ = fmt.Fprintf(&b, "%s; ", msg)
 	}
 	console.Dedent()
 
 	store.Save(FAIL, b.String())
 	store.Write()
 
-	return &store.Data.Current, errors.New("Url check failed.")
+	return &store.Data.Current, errors.New("url check failed")
 
 }
